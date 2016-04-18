@@ -10,6 +10,13 @@
 //                                                           
 //OUTPUT: the macro will create directories named "output_"+ /name of the directories with inside the variables 
 //subdirectories/ and then put the plots and the latex tables inside these directories. 
+//There is an overwrite control with the following options:
+//1) Overwrite file
+//2) Overwrite ALL
+//3) Rename old file
+//4) Rename ALL
+//5) Abort
+//This question is asked to the user only when the macro already find an output file.
 //
 //Author: Alberto Bragagnolo alberto.bragagnolo.3@studenti.unipd.it
 //                                                                                                                    
