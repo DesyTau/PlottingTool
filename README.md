@@ -14,7 +14,7 @@ There is an overwrite control with the following options:
 3) Rename old file
 4) Rename ALL
 5) Abort
-The coice is asked only when the macro already find an output file.
+This question is asked to the user only when the macro already find an output file.
 
 Example of utilize (over the example file):
 
