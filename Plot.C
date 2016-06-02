@@ -286,7 +286,7 @@ void plot_hist() {
     extraText = "Work in Progress      ";
     CMS_lumi(upper,4,33); 
 
-    plotchannel("g_ch");
+    plotchannel(g_ch);
 
 
     TLatex t; 
