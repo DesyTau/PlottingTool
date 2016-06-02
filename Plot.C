@@ -282,8 +282,8 @@ void plot_hist() {
     leg->AddEntry(VV,"dibosons","f");
     leg->AddEntry(QCD,"QCD","f");
 
-    writeExtraText = true;
-    extraText = "Work in Progress      ";
+    writeExtraText = false;
+    //extraText = "Work in Progress      ";
     CMS_lumi(upper,4,33); 
 
     plotchannel(g_ch);

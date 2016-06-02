@@ -228,16 +228,15 @@ void CMSPrelim(const char* dataset, double lowX, double lowY)
   lumi->Draw();
 
 }
-void plotchannel(const char * channel, double lowX, double lowY) {
 
-  TPaveText* chan     = new TPaveText(lowX, lowY+0.061, lowX+0.12, lowY+0.161, "NDC");
-  chan->SetBorderSize(   0 );
-  chan->SetFillStyle(    0 );
-  chan->SetTextAlign(   12 );
-  chan->SetTextSize ( 0.07 );
-  chan->SetTextColor(    1 );
-  chan->SetTextFont (   62 );
-  chan->AddText(channel);
-  chan->Draw();
+void plotchannel(TString channel) {
+
+   TString CMSlabel = "CMS Work in Progress    ";
+   TLatex * tex = new TLatex(0.2,0.94,CMSlabel+channel);
+   tex->SetNDC();
+   tex->SetTextSize(0.05);
+   tex->SetLineWidth(2);
+   tex->Draw();
 
 }
+
