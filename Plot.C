@@ -2,8 +2,12 @@
 //                                                                                                                    
 //This macro loop over all the (nested)(sub)TDirectories inside a root file which name is passed as argument,       
 //when a directory with a TH1 inside is found the function plot_hist() plots the histograms found in the directory, 
-//then the macro will continue to loop over the other directories                                                   
-//                                                                                                                    
+//then the macro will continue to loop over the other directories     
+//
+// Arguments: filename, (mandatory, name of the root file with the histogram)
+//            channel name, (optional, passed as a Latex string e.g. "#mu#tau#", default: "#mu#tau#"")                                              
+//            output directory name (optional, if passed all the output directories will be put in a new directory with whis name)
+//                                                                                                                   
 //WARNING: the directories with the TH1s have to be the most nested ones, i.e. with no other subdirectories.        
 //                                                                                                                    
 //Auxiliary functions definitions are at the bottom
@@ -29,6 +33,8 @@
 
 int g_over_flag;
 bool g_over_all_flag = kFALSE;
+TString g_ch = "#mu#tau";
+TString g_dir_name = "";
 TTimeStamp *time_stamp = new TTimeStamp(); 
 
 void  SetAxis (TString var, TString *xtitle, TString *UdM);
@@ -40,8 +46,9 @@ void  directory_loop(TDirectory *target);
 
 
 void Plot(
-	TString DataFile = "" //file name
-
+	TString DataFile = "", //file name
+  TString ch = "#mu#tau",
+  TString dir_name_input = ""
 	) {
 
 	TFile *file = new TFile(DataFile);  //opening the TFile
@@ -49,7 +56,9 @@ void Plot(
 		std::cout << "File "<<DataFile<<" is Zombie" << endl ;
 		exit(1);
 	}
-
+  g_ch = ch;
+  g_dir_name = dir_name_input;
+  if(g_dir_name != "") gSystem->mkdir(g_dir_name, kTRUE);
 	directory_loop(file);
 
 }
@@ -276,7 +285,9 @@ void plot_hist() {
     writeExtraText = true;
     extraText = "Work in Progress      ";
     CMS_lumi(upper,4,33); 
-    plotchannel("#mu#tau");
+
+    plotchannel("g_ch");
+
 
     TLatex t; 
     t.SetNDC();
@@ -369,13 +380,20 @@ void plot_hist() {
     	c1->Modified();
     	c1->cd();
     	c1->SetSelected(c1);
-
-      gSystem->mkdir("output_" + dir_name, kTRUE);
-
+      
       TString plot_name = "plot_" + Variable + ".png";
       TString plot_name_copy = plot_name;
-      TString output_path = "output_" + dir_name + "/";
 
+      TString output_path;
+
+      if(g_dir_name != "") {
+        gSystem->mkdir(g_dir_name + "/" + "output_" + dir_name, kTRUE);
+        output_path = g_dir_name + "/" + "output_" + dir_name + "/";
+      } else {
+        gSystem->mkdir("output_" + dir_name, kTRUE);
+        output_path = "output_" + dir_name + "/";
+      } 
+      
       //controls if outputfile already exists
       const char* fileExists = gSystem->FindFile((const char*)output_path, plot_name_copy);
       if ( !(fileExists == 0)){ 
