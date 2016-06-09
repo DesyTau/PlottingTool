@@ -214,6 +214,7 @@ void plot_hist() {
     histData->GetYaxis()->SetTitleOffset(1.3);
     histData->GetYaxis()->SetTitleSize(0.06);
     float yUpper = histData->GetMaximum();
+    if(histData->GetMaximum() < ZTT->GetMaximum()) yUpper = ZTT->GetMaximum();
     histData->GetYaxis()->SetRangeUser(0,1.2*yUpper);
 
    	histData->SetMarkerSize(1.2);
