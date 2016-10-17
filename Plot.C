@@ -129,6 +129,7 @@ void plot_hist() {
     TH1 * W   = (TH1*)gDirectory->Get("W");
     TH1 * VV  = (TH1*)gDirectory->Get("VV");
     TH1 * QCD = (TH1*)gDirectory->Get("QCD");
+    TH1 * HTT = (TH1*)gDirectory->Get("HTT");
 
     ZLL->Add(ZL);
     ZLL->Add(ZJ);
@@ -142,7 +143,7 @@ void plot_hist() {
     double nZTT	= ZTT->Integral();
 
     //errors values
-  	float errLumi = 0.027;
+  	float errLumi = 0.062;
     float errQCD = 0.3;
     float errVV = 0.2;
     float errW = 0.15;
@@ -199,6 +200,7 @@ void plot_hist() {
   	SetBinErrorZero(TT);
   	SetBinErrorZero(ZLL);
   	SetBinErrorZero(ZTT);
+    SetBinErrorZero(HTT);
 
     //graphics
     InitData(histData);
@@ -208,6 +210,11 @@ void plot_hist() {
     InitHist(VV,"","",TColor::GetColor("#6F2D35"),1001);
     InitHist(ZLL,"","",TColor::GetColor("#4496C8"),1001);
     InitHist(ZTT,"","",TColor::GetColor("#FFCC66"),1001);
+
+    // signal histogram, scaled by 10
+    HTT->SetLineColor(2);
+	HTT->SetLineWidth(3);
+	HTT->Scale(10.);
 
 //    histData->GetXaxis()->SetTitle(xtitle);
 //    histData->GetYaxis()->SetTitle(ytitle);
@@ -255,6 +262,7 @@ void plot_hist() {
   	QCD->Draw("sameh");
   	histData->Draw("e1same");  
     bkgdErr->Draw("e2same");
+    HTT->Draw("sameh");
 
   	//CHI2
   	int dof=0;
@@ -282,6 +290,7 @@ void plot_hist() {
     leg->AddEntry(W,"W+Jets","f");
     leg->AddEntry(VV,"dibosons","f");
     leg->AddEntry(QCD,"QCD","f");
+    leg->AddEntry(HTT,"SM H(125) x10","f");
 
     writeExtraText = false;
     //extraText = "Work in Progress      ";
@@ -408,7 +417,7 @@ void plot_hist() {
         
         } else {
           cout<<endl<<"Output file "<<plot_name<<" in path"<<endl<<output_path<<endl<<"already exists."<<endl<<" What do you want to do?"<<endl;
-          cout<<"1 Overwrite"<<endl<<"2 Overwrite ALL"<<endl<<"3 Rename old file (a timestamp will be added) (latex table will be renamed)"<<endl<<"4 Remane old files ALL"<<endl<<"5 Abort process"<<endl<<endl;
+          cout<<"1 Overwrite"<<endl<<"2 Overwrite ALL"<<endl<<"3 Rename old file (a timestamp will be added) (latex table will be renamed)"<<endl<<"4 Rename old files ALL"<<endl<<"5 Abort process"<<endl<<endl;
           cout<<"Enter your choice: ";
           cin>>g_over_flag;
           cout<<endl;
