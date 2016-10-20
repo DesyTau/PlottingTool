@@ -111,7 +111,7 @@ void plot_hist() {
 
 
     //binning and axis titles
-    int nBins = histData ->GetNbinsX()-1; //-underflowbin -overflowbin
+    int nBins = histData ->GetNbinsX(); //-underflowbin -overflowbin
   	int xmin = histData->GetXaxis()->GetXmin();
     int xmax = histData->GetXaxis()->GetXmax();
   	float binWidth = (xmax-xmin)/nBins;
@@ -129,7 +129,10 @@ void plot_hist() {
     TH1 * W   = (TH1*)gDirectory->Get("W");
     TH1 * VV  = (TH1*)gDirectory->Get("VV");
     TH1 * QCD = (TH1*)gDirectory->Get("QCD");
-    TH1 * HTT = (TH1*)gDirectory->Get("HTT");
+    TH1 * ggH125 = (TH1*)gDirectory->Get("ggH125");
+    TH1 * qqH125 = (TH1*)gDirectory->Get("qqH125");
+    TH1 * WH125 = (TH1*)gDirectory->Get("WH125");
+    TH1 * ZH125 = (TH1*)gDirectory->Get("ZH125");
 
     ZLL->Add(ZL);
     ZLL->Add(ZJ);
@@ -200,7 +203,10 @@ void plot_hist() {
   	SetBinErrorZero(TT);
   	SetBinErrorZero(ZLL);
   	SetBinErrorZero(ZTT);
-    SetBinErrorZero(HTT);
+    SetBinErrorZero(ggH125);
+    SetBinErrorZero(qqH125);
+    SetBinErrorZero(WH125);
+    SetBinErrorZero(ZH125);
 
     //graphics
     InitData(histData);
@@ -211,10 +217,16 @@ void plot_hist() {
     InitHist(ZLL,"","",TColor::GetColor("#4496C8"),1001);
     InitHist(ZTT,"","",TColor::GetColor("#FFCC66"),1001);
 
-    // signal histogram, scaled by 10
+    // signal histogram, scaled by a factor
+    // adding all signal contributions 
+    TH1 * HTT = (TH1*)ggH125->Clone("HTT");
+	HTT->Add(qqH125);
+	HTT->Add(WH125);
+	HTT->Add(ZH125);
     HTT->SetLineColor(2);
 	HTT->SetLineWidth(3);
-	HTT->Scale(10.);
+	float signalScaleFactor = 10.;
+	HTT->Scale(signalScaleFactor);
 
 //    histData->GetXaxis()->SetTitle(xtitle);
 //    histData->GetYaxis()->SetTitle(ytitle);
@@ -286,11 +298,11 @@ void plot_hist() {
     leg->AddEntry(histData,"Data","lp");
     leg->AddEntry(ZTT,"Z#rightarrow #tau#tau","f");
     leg->AddEntry(ZLL,"Z#rightarrow ll","f");
-    leg->AddEntry(TT,"t#bar{t}+single top","f");
+    leg->AddEntry(TT,"t#bar{t}","f");
     leg->AddEntry(W,"W+Jets","f");
-    leg->AddEntry(VV,"dibosons","f");
+    leg->AddEntry(VV,"VV+single top","f");
     leg->AddEntry(QCD,"QCD","f");
-    leg->AddEntry(HTT,"SM H(125) x10","f");
+    leg->AddEntry(HTT,Form("SM H(125) x %.0f",signalScaleFactor),"f");
 
     writeExtraText = false;
     //extraText = "Work in Progress      ";
@@ -301,10 +313,18 @@ void plot_hist() {
 
     TLatex t; 
     t.SetNDC();
-	if ((Variable != "eta1")&&(Variable != "eta2")) {
+
+    // Drawing legend and show chi2
+    bool plotLegend = true;
+	bool plotChi2 = true;
+
+	/*if ((Variable != "eta1")&&(Variable != "eta2")) {
 		leg->Draw();
 		t.DrawLatex(.6,.3, Form("#bf{#chi^{2}/d.o.f. = %.2f}", chi2/dof) );
-	}
+	}*/
+
+	if (plotLegend) leg->Draw();
+	if (plotChi2) t.DrawLatex(.6,.3, Form("#bf{#chi^{2}/d.o.f. = %.2f}", chi2/dof) );
 
     upper->Draw("SAME");
     upper->RedrawAxis();
@@ -506,6 +526,16 @@ void plot_hist() {
   	ofs << "\\hline\n";
   	ofs << "\\end{tabular} \n\\end{table}";
   	ofs.close();
+
+    // LEGEND ON SEPARATE CANVAS 
+    TString legend_name = "legend";
+    if( (g_over_flag == 3) || (g_over_flag == 4) ){ 
+      gSystem->Rename(output_path + legend_name, output_path + "legend" + Form("%i", time_stamp->GetTime(kFALSE)) +".png" );
+    }
+    TCanvas * legendCanvas = new TCanvas("legendCanvas", "", 700, 800);
+	legendCanvas->cd();
+	leg->Draw();
+    legendCanvas->SaveAs(output_path+legend_name+".png");
 }
 
 
