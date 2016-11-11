@@ -95,6 +95,7 @@ void directory_loop(TDirectory *target) {
 
 void plot_hist() {
 
+  std::cout << " enter plottting function" << std::endl;
   TString Variable = gDirectory->GetName();
   TString path( (char*)strstr( gDirectory->GetPath(), ":" ) );
   path.Remove( 0, 2 );
@@ -124,63 +125,75 @@ void plot_hist() {
     TH1 * ZTT = (TH1*)gDirectory->Get("ZTT");
     TH1 * ZL  = (TH1*)gDirectory->Get("ZL");
     TH1 * ZJ  = (TH1*)gDirectory->Get("ZJ");
-    TH1 * ZLL = (TH1*)gDirectory->Get("ZLL");
-    TH1 * TT  = (TH1*)gDirectory->Get("TT");
+    //TH1 * ZLL = (TH1*)gDirectory->Get("ZLL");
+    TH1 * TTT  = (TH1*)gDirectory->Get("TTT");
+    TH1 * TTJ  = (TH1*)gDirectory->Get("TTJ");
     TH1 * W   = (TH1*)gDirectory->Get("W");
     TH1 * VV  = (TH1*)gDirectory->Get("VV");
+    TH1 * EWKZ = (TH1*)gDirectory->Get("EWKZ");
     TH1 * QCD = (TH1*)gDirectory->Get("QCD");
     TH1 * ggH125 = (TH1*)gDirectory->Get("ggH125");
     TH1 * qqH125 = (TH1*)gDirectory->Get("qqH125");
     TH1 * WH125 = (TH1*)gDirectory->Get("WH125");
     TH1 * ZH125 = (TH1*)gDirectory->Get("ZH125");
 
-    ZLL->Add(ZL);
-    ZLL->Add(ZJ);
+
+    ZL->Add(ZJ);
+    //ZLL->Add(ZJ);
+
+    TH1 * TT = (TH1*)TTT->Clone("TT");
+    TT->Add(TTJ);
+
+    // merging all electroweak process to the W histogram
+    W->Add(VV);
+    W->Add(EWKZ);
 
     //number of events for samples
     double nQCD	= QCD->Integral();
-    double nVV	= VV->Integral();
+    // double nVV	= VV->Integral();
     double nW 	= W->Integral();
     double nTT 	= TT->Integral();
-    double nZLL	= ZLL->Integral();
+    double nZL	= ZL->Integral();
     double nZTT	= ZTT->Integral();
 
     //errors values
-  	float errLumi = 0.062;
+    float errLumi = 0.062;
     float errQCD = 0.3;
-    float errVV = 0.2;
+    //float errVV = 0.2;
     float errW = 0.15;
     float errTT = 0.1;
-    float errZLL = 0.5;
+    float errZL = 0.5;
     float errZTT = 0.08; // 8% on tauID 
 
     TH1 * dummy = (TH1*)ZTT->Clone("dummy");
 
     for (int iB=1; iB<=nBins; ++iB) {
       float eQCD = errQCD*QCD->GetBinContent(iB);
-      float eVV = errVV*VV->GetBinContent(iB);
+      //float eVV = errVV*VV->GetBinContent(iB);
       float eW = errW*W->GetBinContent(iB);
       float eTT = errTT*TT->GetBinContent(iB);
-      float eZLL = errZLL*ZLL->GetBinContent(iB);
+      float eZL = errZL*ZL->GetBinContent(iB);
       float eZTT = errZTT*ZTT->GetBinContent(iB);
-      float err2 = eQCD*eQCD + eVV*eVV + eW*eW + eTT*eTT + eZLL*eZLL + eZTT*eZTT;
+      //float err2 = eQCD*eQCD + eVV*eVV + eW*eW + eTT*eTT + eZL*eZL + eZTT*eZTT;
+      float err2 = eQCD*eQCD + eW*eW + eTT*eTT + eZL*eZL + eZTT*eZTT;
       float errTot = TMath::Sqrt(err2);
       dummy->SetBinError(iB,errTot);
     }
 
     float etotQCD = CountError(QCD, errLumi, errQCD);
-    float etotVV = CountError(VV, errLumi, errVV);
+    //float etotVV = CountError(VV, errLumi, errVV);
     float etotW = CountError(W, errLumi, errW);
     float etotTT = CountError(TT, errLumi, errTT);
-    float etotZLL = CountError(ZLL, errLumi, errZLL);
+    float etotZL = CountError(ZL, errLumi, errZL);
     float etotZTT = CountError(ZTT, errLumi, errZTT);
 
     //hist sum
-    VV->Add(VV,QCD);
-    W->Add(W,VV);
+    //VV->Add(VV,QCD);
+    //W->Add(W,VV);
+    W->Add(W,QCD);
     TT->Add(TT,W);
-    ZLL->Add(ZLL,TT);
-    ZTT->Add(ZTT,ZLL);
+    ZL->Add(ZL,TT);
+    ZTT->Add(ZTT,ZL);
 
     TH1 * bkgdErr = (TH1*)ZTT->Clone("bkgdErr");
     bkgdErr->SetFillStyle(3013);
@@ -198,11 +211,11 @@ void plot_hist() {
     }
 
     SetBinErrorZero(QCD);
-  	SetBinErrorZero(VV);
-  	SetBinErrorZero(W);
-  	SetBinErrorZero(TT);
-  	SetBinErrorZero(ZLL);
-  	SetBinErrorZero(ZTT);
+    //SetBinErrorZero(VV);
+    SetBinErrorZero(W);
+    SetBinErrorZero(TT);
+    SetBinErrorZero(ZL);
+    SetBinErrorZero(ZTT);
     SetBinErrorZero(ggH125);
     SetBinErrorZero(qqH125);
     SetBinErrorZero(WH125);
@@ -213,20 +226,22 @@ void plot_hist() {
     InitHist(QCD,"","",TColor::GetColor("#FFCCFF"),1001);
     InitHist(W,"","",TColor::GetColor("#DE5A6A"),1001);
     InitHist(TT,"","",TColor::GetColor("#9999CC"),1001);
-    InitHist(VV,"","",TColor::GetColor("#6F2D35"),1001);
-    InitHist(ZLL,"","",TColor::GetColor("#4496C8"),1001);
+    //InitHist(VV,"","",TColor::GetColor("#6F2D35"),1001);
+    InitHist(ZL,"","",TColor::GetColor("#4496C8"),1001);
     InitHist(ZTT,"","",TColor::GetColor("#FFCC66"),1001);
 
     // signal histogram, scaled by a factor
     // adding all signal contributions 
     TH1 * HTT = (TH1*)ggH125->Clone("HTT");
-	HTT->Add(qqH125);
-	HTT->Add(WH125);
+    HTT->Add(qqH125);
+    HTT->Add(WH125);
 	HTT->Add(ZH125);
     HTT->SetLineColor(2);
 	HTT->SetLineWidth(3);
 	float signalScaleFactor = 10.;
 	HTT->Scale(signalScaleFactor);
+
+  std::cout << " after signal histograms" << std::endl;
 
 //    histData->GetXaxis()->SetTitle(xtitle);
 //    histData->GetYaxis()->SetTitle(ytitle);
@@ -267,10 +282,10 @@ void plot_hist() {
     //DRAWING
   	histData->Draw("e1");
   	ZTT->Draw("sameh");
-    ZLL->Draw("sameh");
+    ZL->Draw("sameh");
    	TT->Draw("sameh");
     W->Draw("sameh");
-    VV->Draw("sameh");
+    //VV->Draw("sameh");
   	QCD->Draw("sameh");
   	histData->Draw("e1same");  
     bkgdErr->Draw("e2same");
@@ -295,12 +310,12 @@ void plot_hist() {
   	TLegend * leg = new TLegend(0.6,0.4,0.82,0.78);
     SetLegendStyle(leg);
     leg->SetTextSize(0.05);
-    leg->AddEntry(histData,"Data","lp");
+    leg->AddEntry(histData,"Observed","lp");
     leg->AddEntry(ZTT,"Z#rightarrow #tau#tau","f");
-    leg->AddEntry(ZLL,"Z#rightarrow ll","f");
+    leg->AddEntry(ZL,"DY others","f");
     leg->AddEntry(TT,"t#bar{t}","f");
-    leg->AddEntry(W,"W+Jets","f");
-    leg->AddEntry(VV,"VV+single top","f");
+    leg->AddEntry(W,"Electroweak","f");
+    //leg->AddEntry(VV,"VV+single top","f");
     leg->AddEntry(QCD,"QCD","f");
     leg->AddEntry(HTT,Form("SM H(125) x %.0f",signalScaleFactor),"f");
 
@@ -315,8 +330,9 @@ void plot_hist() {
     t.SetNDC();
 
     // Drawing legend and show chi2
-    bool plotLegend = true;
-	bool plotChi2 = true;
+    bool plotLegend = false;
+	bool plotChi2 = false;
+	bool LogYscale = true;
 
 	/*if ((Variable != "eta1")&&(Variable != "eta2")) {
 		leg->Draw();
@@ -327,6 +343,9 @@ void plot_hist() {
 	if (plotChi2) t.DrawLatex(.6,.3, Form("#bf{#chi^{2}/d.o.f. = %.2f}", chi2/dof) );
 
     upper->Draw("SAME");
+
+	if(LogYscale) {histData->SetMinimum(10e-3); upper->SetLogy();}
+
     upper->RedrawAxis();
     upper->Modified();
     upper->Update();
@@ -488,8 +507,8 @@ void plot_hist() {
 
   	double nData=histData->Integral();
   	double nMC=ZTT->Integral();
-  	double errTotBkg = TMath::Sqrt(etotQCD*etotQCD+etotVV*etotVV+etotW*etotW+etotTT*etotTT+etotZLL*etotZLL);
-  	double errTotMC = TMath::Sqrt(etotQCD*etotQCD+etotVV*etotVV+etotW*etotW+etotTT*etotTT+etotZLL*etotZLL+etotZTT*etotZTT);
+  	double errTotBkg = TMath::Sqrt(etotQCD*etotQCD+/*etotVV*etotVV*/+etotW*etotW+etotTT*etotTT+etotZL*etotZL);
+  	double errTotMC = TMath::Sqrt(etotQCD*etotQCD+/*etotVV*etotVV*/+etotW*etotW+etotTT*etotTT+etotZL*etotZL+etotZTT*etotZTT);
 
     TString latex_name = "tab.txt";
     if( (g_over_flag == 3) || (g_over_flag == 4) ){ 
@@ -502,21 +521,21 @@ void plot_hist() {
   	ofs << "\\hline\n";
   	ofs << "Data & "<<nData<<"$\\pm$"<<TMath::Sqrt(nData)<<" \\\\ \n";
   	ofs << "Z$\\rightarrow \\tau \\tau$ expected signal & "<<nZTT<<"$\\pm$"<<etotZTT<<" \\\\ \n";
-  	ofs << "Z$\\rightarrow \\tau \\tau$ measured signal & "<<nData-(nQCD+nVV+nW+nTT+nZLL)<<"$\\pm$"<<TMath::Sqrt(nData+errTotBkg*errTotBkg)<<" \\\\ \n";
+  	ofs << "Z$\\rightarrow \\tau \\tau$ measured signal & "<<nData-(nQCD+/*nVV*/+nW+nTT+nZL)<<"$\\pm$"<<TMath::Sqrt(nData+errTotBkg*errTotBkg)<<" \\\\ \n";
 
   	ofs << "QCD background& "<<nQCD<<"$\\pm$"<<etotQCD<<" \\\\ \n";
-  	ofs << "diboson background& "<<nVV<<"$\\pm$"<<etotVV<<" \\\\ \n";
+  	//ofs << "diboson background& "<<nVV<<"$\\pm$"<<etotVV<<" \\\\ \n";
   	ofs << "W background& "<<nW<<"$\\pm$"<<etotW<<" \\\\ \n";
   	ofs << "$t \\bar{t}$ background& "<<nTT<<"$\\pm$"<<etotTT<<" \\\\ \n";
-  	ofs << "$Z \\rightarrow ll$ background& "<<nZLL<<"$\\pm$"<<etotZLL<<" \\\\ \n";
-  	ofs << "Expected total background & "<<nQCD+nVV+nW+nTT+nZLL<<"$\\pm$"<<errTotBkg<<" \\\\ \n";
+  	ofs << "$Z \\rightarrow ll$ background& "<<nZL<<"$\\pm$"<<etotZL<<" \\\\ \n";
+  	ofs << "Expected total background & "<<nQCD+/*nVV*/+nW+nTT+nZL<<"$\\pm$"<<errTotBkg<<" \\\\ \n";
     ofs << "Total MC & "<<nMC<<"$\\pm$"<<errTotMC<<" \\\\ \n";
 
   	ofs << "\\hline\n";
     ofs << std::setprecision(3) << std::fixed;
   	ofs << "Data/MC & "<<nData/nMC<<"$\\pm$"<<TMath::Sqrt(nMC*nMC*nData+nData*nData*errTotMC*errTotMC)/(nMC*nMC)<<" \\\\ \n";
   	ofs << std::setprecision(1) << std::fixed;
-  	ofs << "Sign(MC)/Bkg & "<<nZTT/(nQCD+nVV+nW+nTT+nZLL)<<"$\\pm$"<<TMath::Sqrt((nQCD+nVV+nW+nTT+nZLL)*(nQCD+nVV+nW+nTT+nZLL)*etotZTT*etotZTT+nZTT*nZTT*errTotBkg*errTotBkg)/((nQCD+nVV+nW+nTT+nZLL)*(nQCD+nVV+nW+nTT+nZLL))<<" \\\\ \n";
+  	ofs << "Sign(MC)/Bkg & "<<nZTT/(nQCD+/*nVV*/+nW+nTT+nZL)<<"$\\pm$"<<TMath::Sqrt((nQCD+/*nVV*/+nW+nTT+nZL)*(nQCD+/*nVV*/+nW+nTT+nZL)*etotZTT*etotZTT+nZTT*nZTT*errTotBkg*errTotBkg)/((nQCD+/*nVV*/+nW+nTT+nZL)*(nQCD+/*nVV*/+nW+nTT+nZL))<<" \\\\ \n";
   	ofs << "Significance & "<<nZTT/TMath::Sqrt(nMC)<<"$\\pm$"<<TMath::Sqrt(nZTT*nZTT*errTotMC*errTotMC+nMC*etotZTT*etotZTT)/nMC<<" \\\\ \n";
 
   	ofs << "\\hline\n";
