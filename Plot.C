@@ -128,6 +128,7 @@ void plot_hist() {
     //TH1 * ZLL = (TH1*)gDirectory->Get("ZLL");
     TH1 * TTT  = (TH1*)gDirectory->Get("TTT");
     TH1 * TTJ  = (TH1*)gDirectory->Get("TTJ");
+//TH1* TT = (TH1*)gDirectory->Get("TT");
     TH1 * W   = (TH1*)gDirectory->Get("W");
     TH1 * VV  = (TH1*)gDirectory->Get("VV");
     TH1 * EWKZ = (TH1*)gDirectory->Get("EWKZ");
@@ -157,13 +158,23 @@ void plot_hist() {
     double nZTT	= ZTT->Integral();
 
     //errors values
-    float errLumi = 0.062;
+
+    /*float errLumi = 0.062;
     float errQCD = 0.3;
     //float errVV = 0.2;
     float errW = 0.15;
     float errTT = 0.1;
     float errZL = 0.5;
-    float errZTT = 0.08; // 8% on tauID 
+    float errZTT = 0.08; // 8% on tauID */
+
+    float errLumi = 0.0;
+    float errQCD = 0.0;
+    //float errVV = 0.2;
+    float errW = 0.0;
+    float errTT = 0.0;
+    float errZL = 0.0;
+    float errZTT = 0.0;
+
 
     TH1 * dummy = (TH1*)ZTT->Clone("dummy");
 
